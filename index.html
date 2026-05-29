@@ -1,0 +1,793 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>我们的周年纪念</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        /* 导航栏 */
+        .navbar {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 15px 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            position: fixed;
+            top: 0;
+            width: 100%;
+            z-index: 1000;
+            backdrop-filter: blur(10px);
+        }
+
+        .nav-links {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+        }
+
+        .nav-link {
+            color: #666;
+            text-decoration: none;
+            padding: 8px 16px;
+            border-radius: 20px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .nav-link:hover, .nav-link.active {
+            background: #ff6b6b;
+            color: white;
+        }
+
+        /* 页面容器 */
+        .page {
+            display: none;
+            padding: 80px 20px 40px;
+            min-height: calc(100vh - 120px);
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        /* 首页样式 */
+        .home-page {
+            position: relative;
+            min-height: 80vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            overflow: hidden;
+        }
+
+        .home-background {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            opacity: 0.3;
+            z-index: -1;
+        }
+
+        .upload-home-bg {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 10px;
+            border-radius: 8px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .upload-btn-home {
+            background: #4ecdc4;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.9em;
+        }
+
+        .upload-btn-home:hover {
+            background: #45b7aa;
+        }
+
+        .file-input-home {
+            display: none;
+        }
+
+        .home-content {
+            background: rgba(255, 255, 255, 0.9);
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            max-width: 500px;
+            margin: 0 auto;
+        }
+
+        .home-title {
+            color: #2c3e50;
+            font-size: 2em;
+            margin-bottom: 15px;
+            font-weight: 500;
+        }
+
+        .home-subtitle {
+            color: #7f8c8d;
+            font-size: 1.1em;
+            margin-bottom: 20px;
+            line-height: 1.5;
+        }
+
+        .story-content {
+            color: #555;
+            line-height: 1.6;
+            font-size: 1em;
+            text-align: center;
+        }
+
+        /* 照片墙页面 */
+        .gallery-page {
+            padding: 20px;
+        }
+
+        .gallery-header {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        .gallery-title {
+            color: #2c3e50;
+            font-size: 2em;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+
+        .gallery-subtitle {
+            color: #7f8c8d;
+            font-size: 1.1em;
+        }
+
+        .upload-section {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            max-width: 500px;
+            margin: 0 auto 25px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+            text-align: center;
+        }
+
+        .upload-btn {
+            background: #4ecdc4;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 20px;
+            cursor: pointer;
+            margin: 8px;
+            transition: all 0.3s ease;
+            font-size: 0.95em;
+        }
+
+        .upload-btn:hover {
+            background: #45b7aa;
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        .input-group {
+            margin: 10px 0;
+            text-align: left;
+        }
+
+        .input-label {
+            display: block;
+            margin-bottom: 5px;
+            color: #555;
+            font-size: 0.9em;
+        }
+
+        .input-field {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 0.95em;
+            box-sizing: border-box;
+        }
+
+        .gallery-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 15px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .gallery-item {
+            position: relative;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .gallery-item:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
+        }
+
+        .gallery-item img {
+            width: 100%;
+            height: 160px;
+            object-fit: cover;
+            display: block;
+        }
+
+        .gallery-caption {
+            padding: 10px;
+            background: white;
+            text-align: center;
+        }
+
+        .gallery-date {
+            color: #e74c3c;
+            font-size: 0.85em;
+            margin-bottom: 3px;
+        }
+
+        .gallery-desc {
+            color: #555;
+            font-size: 0.9em;
+        }
+
+        .delete-btn {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background: rgba(231, 76, 60, 0.9);
+            color: white;
+            border: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .gallery-item:hover .delete-btn {
+            opacity: 1;
+        }
+
+        /* 纪念日页面 */
+        .anniversary-page {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 30px 20px;
+        }
+
+        .anniversary-content {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+        }
+
+        .anniversary-title {
+            color: #2c3e50;
+            font-size: 2em;
+            margin-bottom: 15px;
+            font-weight: 500;
+            text-align: center;
+        }
+
+        .date-pickers {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .date-group {
+            text-align: center;
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .date-label {
+            display: block;
+            color: #7f8c8d;
+            margin-bottom: 8px;
+            font-size: 0.95em;
+        }
+
+        .date-input {
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 0.95em;
+            width: 100%;
+        }
+
+        .anniversary-text {
+            color: #555;
+            line-height: 1.6;
+            font-size: 1em;
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .countdown {
+            text-align: center;
+            margin: 25px 0;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        .countdown-number {
+            font-size: 1.8em;
+            font-weight: bold;
+            color: #e74c3c;
+        }
+
+        /* 模态框 */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 2000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.9);
+        }
+
+        .modal-content {
+            margin: auto;
+            display: block;
+            width: 80%;
+            max-width: 600px;
+            max-height: 80%;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        .modal-caption {
+            position: absolute;
+            bottom: 15px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: white;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 8px 16px;
+            border-radius: 16px;
+            text-align: center;
+            max-width: 80%;
+        }
+
+        .close {
+            position: absolute;
+            top: 15px;
+            right: 35px;
+            color: #f1f1f1;
+            font-size: 30px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .close:hover {
+            color: #bbb;
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .home-title {
+                font-size: 1.8em;
+            }
+            
+            .gallery-title {
+                font-size: 1.8em;
+            }
+            
+            .nav-links {
+                flex-wrap: wrap;
+                gap: 8px;
+            }
+            
+            .gallery-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .anniversary-content {
+                padding: 20px;
+            }
+            
+            .date-pickers {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .upload-home-bg {
+                position: static;
+                margin: 15px auto;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 导航栏 -->
+    <nav class="navbar">
+        <div class="nav-links">
+            <div class="nav-link active" onclick="showPage('home')">首页</div>
+            <div class="nav-link" onclick="showPage('gallery')">照片墙</div>
+            <div class="nav-link" onclick="showPage('anniversary')">纪念日</div>
+        </div>
+    </nav>
+
+    <!-- 首页 -->
+    <div class="page active" id="home">
+        <div class="home-page">
+            <img id="homeBackground" class="home-background" src="" alt="首页背景">
+            <div class="upload-home-bg">
+                <input type="file" id="homeBgUpload" class="file-input-home" accept="image/*" onchange="changeHomeBackground(event)">
+                <button class="upload-btn-home" onclick="document.getElementById('homeBgUpload').click()">更换背景</button>
+            </div>
+            <div class="home-content">
+                <h1 class="home-title">我们的故事</h1>
+                <p class="home-subtitle">从相遇到现在，每一个瞬间都是珍贵的回忆</p>
+                <div class="story-content">
+                    想让即将破晓的清晨见到晚霞，<br>
+                    想让寂寞的冬天见到夏日。
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 照片墙页面 -->
+    <div class="page" id="gallery">
+        <div class="gallery-page">
+            <div class="gallery-header">
+                <h2 class="gallery-title">回忆相册</h2>
+                <p class="gallery-subtitle">记录我们的美好时光</p>
+            </div>
+            
+            <div class="upload-section">
+                <h3 style="color: #2c3e50; margin-bottom: 12px; font-size: 1.1em;">添加新的回忆</h3>
+                <input type="file" id="imageUpload" class="file-input" accept="image/*" onchange="handleImageUpload(event)">
+                <button class="upload-btn" onclick="document.getElementById('imageUpload').click()">选择照片</button>
+                
+                <div class="input-group">
+                    <label class="input-label">照片日期：</label>
+                    <input type="date" id="photoDate" class="input-field">
+                </div>
+                
+                <div class="input-group">
+                    <label class="input-label">照片描述：</label>
+                    <input type="text" id="photoDesc" class="input-field" placeholder="为这张照片写下美好回忆...">
+                </div>
+                
+                <button class="upload-btn" onclick="addPhotoToGallery()" style="background: #6c5ce7;">添加到相册</button>
+                <button class="upload-btn" onclick="saveGallery()" style="background: #a29bfe;">保存相册</button>
+            </div>
+            
+            <div class="gallery-grid" id="galleryGrid">
+                <!-- 照片将在这里显示 -->
+            </div>
+        </div>
+    </div>
+
+    <!-- 纪念日页面 -->
+    <div class="page" id="anniversary">
+        <div class="anniversary-page">
+            <div class="anniversary-content">
+                <h2 class="anniversary-title">我们的纪念日</h2>
+                
+                <div class="date-pickers">
+                    <div class="date-group">
+                        <span class="date-label">相识日期</span>
+                        <input type="date" id="acquaintanceDate" class="date-input" onchange="updateAnniversaryDates()">
+                    </div>
+                    <div class="date-group">
+                        <span class="date-label">在一起日期</span>
+                        <input type="date" id="togetherDate" class="date-input" onchange="updateAnniversaryDates()">
+                    </div>
+                </div>
+                
+                <div class="countdown">
+                    <h3>我们已经相爱了</h3>
+                    <div class="countdown-number" id="togetherCountdown">计算中...</div>
+                </div>
+                
+                <div class="anniversary-text">
+                    感谢你陪我走过的每一个日子，<br>
+                    让平凡的生活变得如此特别。<br><br>
+                    愿我们的爱情如初见般美好，<br>
+                    愿我们的未来充满无限可能。<br><br>
+                    爱你，不止今天，而是每一天。
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 图片模态框 -->
+    <div id="imageModal" class="modal">
+        <span class="close" onclick="closeModal()">&times;</span>
+        <img class="modal-content" id="modalImage">
+        <div class="modal-caption" id="modalCaption"></div>
+    </div>
+
+    <script>
+        let currentImageFile = null;
+
+        // 页面切换功能
+        function showPage(pageId) {
+            // 隐藏所有页面
+            document.querySelectorAll('.page').forEach(page => {
+                page.classList.remove('active');
+            });
+            
+            // 显示选中的页面
+            document.getElementById(pageId).classList.add('active');
+            
+            // 更新导航栏状态
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.classList.remove('active');
+            });
+            
+            event.target.classList.add('active');
+            
+            // 如果切换到照片墙页面，加载已保存的图片
+            if(pageId === 'gallery') {
+                loadGallery();
+            } else if(pageId === 'anniversary') {
+                loadAnniversaryDates();
+            } else if(pageId === 'home') {
+                loadHomeBackground();
+            }
+        }
+
+        // 更换首页背景
+        function changeHomeBackground(event) {
+            const file = event.target.files[0];
+            if (file && file.type.startsWith('image/')) {
+                const reader = new FileReader();
+                
+                reader.onload = function(e) {
+                    document.getElementById('homeBackground').src = e.target.result;
+                    localStorage.setItem('home_background', e.target.result);
+                };
+                
+                reader.readAsDataURL(file);
+            }
+        }
+
+        // 加载首页背景
+        function loadHomeBackground() {
+            const savedBg = localStorage.getItem('home_background');
+            if(savedBg) {
+                document.getElementById('homeBackground').src = savedBg;
+            }
+        }
+
+        // 处理图片上传（仅存储文件供后续使用）
+        function handleImageUpload(event) {
+            const file = event.target.files[0];
+            if (file && file.type.startsWith('image/')) {
+                currentImageFile = file;
+                alert('照片已选择，请填写日期和描述后添加到相册');
+            }
+        }
+
+        // 添加照片到相册
+        function addPhotoToGallery() {
+            if (!currentImageFile) {
+                alert('请先选择一张照片');
+                return;
+            }
+
+            const photoDate = document.getElementById('photoDate').value;
+            const photoDesc = document.getElementById('photoDesc').value;
+
+            if (!photoDate) {
+                alert('请输入照片日期');
+                return;
+            }
+
+            const reader = new FileReader();
+            
+            reader.onload = function(e) {
+                const galleryItem = document.createElement('div');
+                galleryItem.className = 'gallery-item';
+                galleryItem.innerHTML = `
+                    <img src="${e.target.result}" alt="回忆照片" onclick="openModal('${e.target.result}', '${photoDate}', '${photoDesc || '美好回忆'}')">
+                    <div class="gallery-caption">
+                        <div class="gallery-date">${formatDate(photoDate)}</div>
+                        <div class="gallery-desc">${photoDesc || '美好回忆'}</div>
+                    </div>
+                    <button class="delete-btn" onclick="deleteImage(this)">×</button>
+                `;
+                document.getElementById('galleryGrid').appendChild(galleryItem);
+                
+                // 清空当前文件和输入框
+                currentImageFile = null;
+                document.getElementById('photoDate').value = '';
+                document.getElementById('photoDesc').value = '';
+                document.getElementById('imageUpload').value = '';
+            };
+            
+            reader.readAsDataURL(currentImageFile);
+        }
+
+        // 格式化日期显示
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            return date.toLocaleDateString('zh-CN', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
+        }
+
+        // 删除图片
+        function deleteImage(button) {
+            if(confirm('确定要删除这张照片吗？')) {
+                button.parentElement.remove();
+            }
+        }
+
+        // 保存相册到本地存储
+        function saveGallery() {
+            const items = document.querySelectorAll('.gallery-item');
+            const galleryData = [];
+            
+            items.forEach(item => {
+                const img = item.querySelector('img');
+                const dateDiv = item.querySelector('.gallery-date');
+                const descDiv = item.querySelector('.gallery-desc');
+                
+                galleryData.push({
+                    src: img.src,
+                    date: dateDiv.textContent,
+                    desc: descDiv.textContent
+                });
+            });
+            
+            localStorage.setItem('anniversary_gallery', JSON.stringify(galleryData));
+            alert('相册已保存！');
+        }
+
+        // 加载已保存的相册
+        function loadGallery() {
+            const savedData = localStorage.getItem('anniversary_gallery');
+            if(savedData) {
+                const galleryData = JSON.parse(savedData);
+                const galleryGrid = document.getElementById('galleryGrid');
+                
+                // 清空现有内容
+                galleryGrid.innerHTML = '';
+                
+                galleryData.forEach(item => {
+                    const galleryItem = document.createElement('div');
+                    galleryItem.className = 'gallery-item';
+                    galleryItem.innerHTML = `
+                        <img src="${item.src}" alt="回忆照片" onclick="openModal('${item.src}', '${item.date}', '${item.desc}')">
+                        <div class="gallery-caption">
+                            <div class="gallery-date">${item.date}</div>
+                            <div class="gallery-desc">${item.desc}</div>
+                        </div>
+                        <button class="delete-btn" onclick="deleteImage(this)">×</button>
+                    `;
+                    galleryGrid.appendChild(galleryItem);
+                });
+            }
+        }
+
+        // 打开图片模态框
+        function openModal(src, date, desc) {
+            document.getElementById('modalImage').src = src;
+            document.getElementById('modalCaption').innerHTML = `<strong>${date}</strong><br>${desc}`;
+            document.getElementById('imageModal').style.display = 'block';
+        }
+
+        // 关闭模态框
+        function closeModal() {
+            document.getElementById('imageModal').style.display = 'none';
+        }
+
+        // 加载纪念日日期
+        function loadAnniversaryDates() {
+            const savedAcquaintance = localStorage.getItem('acquaintance_date');
+            const savedTogether = localStorage.getItem('together_date');
+            
+            if(savedAcquaintance) {
+                document.getElementById('acquaintanceDate').value = savedAcquaintance;
+            }
+            
+            if(savedTogether) {
+                document.getElementById('togetherDate').value = savedTogether;
+            }
+            
+            updateAnniversaryDates();
+        }
+
+        // 更新纪念日日期
+        function updateAnniversaryDates() {
+            const acquaintanceDate = document.getElementById('acquaintanceDate').value;
+            const togetherDate = document.getElementById('togetherDate').value;
+            
+            if(acquaintanceDate) {
+                localStorage.setItem('acquaintance_date', acquaintanceDate);
+            }
+            
+            if(togetherDate) {
+                localStorage.setItem('together_date', togetherDate);
+            }
+            
+            calculateTogetherTime();
+        }
+
+        // 计算相爱天数
+        function calculateTogetherTime() {
+            const togetherDateStr = localStorage.getItem('together_date');
+            if(togetherDateStr) {
+                const togetherDate = new Date(togetherDateStr);
+                const today = new Date();
+                
+                // 计算相差天数
+                const diffTime = Math.abs(today - togetherDate);
+                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                
+                document.getElementById('togetherCountdown').textContent = `${diffDays} 天`;
+            } else {
+                document.getElementById('togetherCountdown').textContent = '请先设置在一起日期';
+            }
+        }
+
+        // 页面加载时初始化
+        window.onload = function() {
+            loadHomeBackground();
+            loadAnniversaryDates();
+            
+            // 每天更新相爱天数
+            setInterval(calculateTogetherTime, 86400000);
+        };
+
+        // 点击模态框外部关闭
+        window.onclick = function(event) {
+            const modal = document.getElementById('imageModal');
+            if (event.target === modal) {
+                closeModal();
+            }
+        };
+    </script>
+</body>
+</html>
