@@ -547,6 +547,7 @@
 
     <script>
         let currentImageFile = null;
+        let galleryItems = [];
 
         // 页面切换功能
         function showPage(pageId) {
@@ -625,26 +626,47 @@
             const reader = new FileReader();
             
             reader.onload = function(e) {
-                const galleryItem = document.createElement('div');
-                galleryItem.className = 'gallery-item';
-                galleryItem.innerHTML = `
-                    <img src="${e.target.result}" alt="回忆照片" onclick="openModal('${e.target.result}', '${photoDate}', '${photoDesc || '美好回忆'}')">
-                    <div class="gallery-caption">
-                        <div class="gallery-date">${formatDate(photoDate)}</div>
-                        <div class="gallery-desc">${photoDesc || '美好回忆'}</div>
-                    </div>
-                    <button class="delete-btn" onclick="deleteImage(this)">×</button>
-                `;
-                document.getElementById('galleryGrid').appendChild(galleryItem);
+                // 创建图片项对象
+                const imageItem = {
+                    id: Date.now(), // 使用时间戳作为唯一ID
+                    src: e.target.result,
+                    date: photoDate,
+                    desc: photoDesc || '美好回忆'
+                };
+                
+                // 添加到数组
+                galleryItems.push(imageItem);
+                
+                // 添加到页面
+                addImageToPage(imageItem);
                 
                 // 清空当前文件和输入框
                 currentImageFile = null;
                 document.getElementById('photoDate').value = '';
                 document.getElementById('photoDesc').value = '';
                 document.getElementById('imageUpload').value = '';
+                
+                // 自动保存
+                saveGallery();
             };
             
             reader.readAsDataURL(currentImageFile);
+        }
+
+        // 将图片项添加到页面
+        function addImageToPage(item) {
+            const galleryItem = document.createElement('div');
+            galleryItem.className = 'gallery-item';
+            galleryItem.dataset.id = item.id; // 使用data-id属性存储唯一标识
+            galleryItem.innerHTML = `
+                <img src="${item.src}" alt="回忆照片" onclick="openModal('${item.src}', '${formatDate(item.date)}', '${item.desc}')">
+                <div class="gallery-caption">
+                    <div class="gallery-date">${formatDate(item.date)}</div>
+                    <div class="gallery-desc">${item.desc}</div>
+                </div>
+                <button class="delete-btn" onclick="deleteImage(${item.id})">×</button>
+            `;
+            document.getElementById('galleryGrid').appendChild(galleryItem);
         }
 
         // 格式化日期显示
@@ -658,56 +680,60 @@
         }
 
         // 删除图片
-        function deleteImage(button) {
+        function deleteImage(id) {
             if(confirm('确定要删除这张照片吗？')) {
-                button.parentElement.remove();
+                // 从数组中移除
+                galleryItems = galleryItems.filter(item => item.id !== id);
+                
+                // 从页面中移除
+                const element = document.querySelector(`.gallery-item[data-id="${id}"]`);
+                if(element) {
+                    element.remove();
+                }
+                
+                // 保存更新后的画廊
+                saveGallery();
             }
         }
 
         // 保存相册到本地存储
         function saveGallery() {
-            const items = document.querySelectorAll('.gallery-item');
-            const galleryData = [];
-            
-            items.forEach(item => {
-                const img = item.querySelector('img');
-                const dateDiv = item.querySelector('.gallery-date');
-                const descDiv = item.querySelector('.gallery-desc');
-                
-                galleryData.push({
-                    src: img.src,
-                    date: dateDiv.textContent,
-                    desc: descDiv.textContent
-                });
-            });
-            
-            localStorage.setItem('anniversary_gallery', JSON.stringify(galleryData));
-            alert('相册已保存！');
+            try {
+                localStorage.setItem('anniversary_gallery', JSON.stringify(galleryItems));
+                console.log('相册已保存！当前共有', galleryItems.length, '张照片');
+            } catch(e) {
+                // 如果localStorage空间不足，提示用户
+                if(e.name === 'QuotaExceededError') {
+                    alert('存储空间已满，请删除一些旧照片后再添加新照片');
+                } else {
+                    console.error('保存失败:', e);
+                }
+            }
         }
 
         // 加载已保存的相册
         function loadGallery() {
-            const savedData = localStorage.getItem('anniversary_gallery');
-            if(savedData) {
-                const galleryData = JSON.parse(savedData);
-                const galleryGrid = document.getElementById('galleryGrid');
-                
-                // 清空现有内容
-                galleryGrid.innerHTML = '';
-                
-                galleryData.forEach(item => {
-                    const galleryItem = document.createElement('div');
-                    galleryItem.className = 'gallery-item';
-                    galleryItem.innerHTML = `
-                        <img src="${item.src}" alt="回忆照片" onclick="openModal('${item.src}', '${item.date}', '${item.desc}')">
-                        <div class="gallery-caption">
-                            <div class="gallery-date">${item.date}</div>
-                            <div class="gallery-desc">${item.desc}</div>
-                        </div>
-                        <button class="delete-btn" onclick="deleteImage(this)">×</button>
-                    `;
-                    galleryGrid.appendChild(galleryItem);
-                });
+            try {
+                const savedData = localStorage.getItem('anniversary_gallery');
+                if(savedData) {
+                    galleryItems = JSON.parse(savedData);
+                    
+                    // 清空现有内容
+                    document.getElementById('galleryGrid').innerHTML = '';
+                    
+                    // 重新渲染所有图片
+                    galleryItems.forEach(item => {
+                        addImageToPage(item);
+                    });
+                    
+                    console.log('成功加载', galleryItems.length, '张照片');
+                } else {
+                    console.log('没有找到保存的照片');
+                }
+            } catch(e) {
+                console.error('加载失败:', e);
+                galleryItems = [];
+                document.getElementById('galleryGrid').innerHTML = '';
             }
         }
 
@@ -779,6 +805,11 @@
             
             // 每天更新相爱天数
             setInterval(calculateTogetherTime, 86400000);
+            
+            // 初始化时也加载照片墙
+            if(document.getElementById('gallery').classList.contains('active')) {
+                loadGallery();
+            }
         };
 
         // 点击模态框外部关闭
@@ -788,6 +819,16 @@
                 closeModal();
             }
         };
+        
+        // 添加页面可见性检测，当页面变为可见时重新加载数据
+        document.addEventListener('visibilitychange', function() {
+            if (!document.hidden) {
+                // 页面变为可见时，重新加载数据以确保同步
+                if(document.getElementById('gallery').classList.contains('active')) {
+                    loadGallery();
+                }
+            }
+        });
     </script>
 </body>
 </html>
